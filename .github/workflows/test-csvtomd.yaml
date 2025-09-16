@@ -1,0 +1,16 @@
+name: test-csvtomd.yaml
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:22.04
+    steps:
+      - run: apt-get update && apt-get install -y git gforth
+      - uses: actions/checkout@v4
+      - run: gforth csvtomd.fs -e "transform bye"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: markdown-table
+          path: out/output.md
