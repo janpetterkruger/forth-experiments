@@ -7,26 +7,10 @@
 Create line-buf  /line-buf allot
 Create LF 10 c,
 
-
-
 ( Variables )
 Variable s \ start of current column
 Variable c  \ current char position
 Variable e \ end (addr + length) of current line
-Variable HEADER-A   \ will hold start address
-Variable HEADER-Z   \ will hold end address
-
-here HEADER-A !                      \ mark start AFTER variables exist
-
-s" ---"                          s,  10 c,
-s" title: Operational Contacts"  s,  10 c,
-s" sidebar_position: 10"         s,  10 c,
-s" ---"                          s,  10 c,
-                                 10 c,
-s" # AO Core Operational Contacts" s, 10 c,
-                                 10 c,
-
-here HEADER-Z !                      \ mark end
 
 ( File Operations )
 : open-input       ( addr u -- )  r/o open-file   throw  to fd-in ;
@@ -54,13 +38,13 @@ here HEADER-Z !                      \ mark end
 : eol        ( -- )  e @ c ! ;
 : nextcolpos ( -- )  c @ 1+ dup s ! c ! ;
 : header ( -- addr u ) S\" ---\ntitle: Operational Contacts\nsidebar_position: 10\n---\n\n# AO Core Operational Contacts\n\n" ;
-: mdheader ( -- ) header write-bytes ;
+: file-header ( -- ) header write-bytes ;
 : write-header   ( u -- n ) init-vars |>  0 >r begin c<e while scanln wcol r> 1+ >r c<e if |> nextcolpos else |> eol then repeat nl r> ;
 : write-separator ( n -- )  |> 0 ?do s" ---|" write-bytes loop nl ;
 : exit-if-empty ( u flag -- ) 0= if drop exit then ;
-: create-data-row ( u -- ) init-vars |> begin c<e while scanln wcol c<e if |> nextcolpos else |> eol then repeat nl ;
-: create-body   ( -- ) begin readln while create-data-row repeat drop ;
-: create-header ( u -- ) mdheader write-header write-separator ;
+: write-data-row ( u -- ) init-vars |> begin c<e while scanln wcol c<e if |> nextcolpos else |> eol then repeat nl ;
+: create-body   ( -- ) begin readln while write-data-row repeat drop ;
+: create-header ( u -- ) file-header write-header write-separator ;
 
 ( Main )
 : csv>md   ( -- )  readln exit-if-empty create-header create-body ;
